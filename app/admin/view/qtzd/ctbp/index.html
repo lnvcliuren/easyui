@@ -1,0 +1,110 @@
+﻿{include file='public/_meta'}
+<title>成套殡品信息</title>
+</head>
+<body>
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> 前台字典管理 <span class="c-gray en">&gt;</span> 成套殡品信息 <a class="btn btn-success radius r" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+
+<table class="table table-border table-bordered table-bg table-sort cl pd-5 bg-1 bk-gray mt-20" style="margin-top: 0px;margin-bottom: 10px;">
+	<tr>
+		<td width="200" class="va-t" style="background-color: #fcfcfc">
+			<a href="javascript:;" id="remove" class="btn btn-danger radius">删除</a>
+			<a href="javascript:;" onclick="admin_ctbp_add('添加成套殡品','add.html','370','200')" class="btn btn-primary radius">新增</a>
+			<ul id="treeDemo" class="ztree" style="margin-top: 10px;"></ul>
+		</td>
+		<td class="va-t"><iframe ID="testIframe" Name="testIframe" FRAMEBORDER=0 SCROLLING=AUTO width=100%  height=590px SRC="xmlist.html"></iframe></td>
+	</tr>
+</table>
+
+<!--_footer 作为公共模版分离出去-->
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/zTree/v3/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript">
+var setting = {
+	view: {
+		dblClickExpand: false,
+		showLine: false,
+		selectedMulti: false
+	},
+	data: {
+		simpleData: {
+			enable:true,
+			idKey: "id",
+			pIdKey: "pid",
+			rootPId: ""
+		}
+	},
+	callback: {
+		beforeClick: function(treeId, treeNode) {
+			var zTree = $.fn.zTree.getZTreeObj("tree");
+			//console.log(treeNode.level);
+            demoIframe.attr("src","xmlist.html?flid="+treeNode.id);
+			return true;
+            //console.log(treeNode);
+		}
+	}
+};
+
+var zNodes ={$list};
+		
+var code;
+
+/*管理员-项目-添加*/
+function admin_ctbp_add(title,url,w,h){
+    layer_show(title,url,w,h);
+}
+
+function datadel(){
+
+}
+
+function beforeRemove(treeId, treeNode) {
+    className = (className === "dark" ? "":"dark");
+    showLog("[ "+getTime()+" beforeRemove ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name);
+    return confirm("确认删除 节点 -- " + treeNode.name + " 吗？");
+}
+function onRemove(e, treeId, treeNode) {
+    showLog("[ "+getTime()+" onRemove ]&nbsp;&nbsp;&nbsp;&nbsp; " + treeNode.name);
+}
+
+function remove(e) {
+    var zTree = $.fn.zTree.getZTreeObj("treeDemo"),
+        nodes = zTree.getSelectedNodes(),
+        treeNode = nodes[0];
+    if (nodes.length == 0) {
+        alert("请先选择一个节点");
+        return;
+    }
+    var callbackFlag = $("#callbackTrigger").attr("checked");
+    $.getJSON("{:url('admin/ctbp/delete')}",{'ids':treeNode.id},function(res){
+        if(parseInt(res.statusCode) == 200){
+            layer.msg(res.message,{icon:1,time:1000});
+            zTree.removeNode(treeNode, callbackFlag);
+            location.reload();
+		}else{
+            layer.msg(res.message,{icon:2,time:1000});
+		}
+	});
+    //
+};
+		
+function showCode(str) {
+	if (!code) code = $("#code");
+	code.empty();
+	code.append("<li>"+str+"</li>");
+}
+		
+$(document).ready(function(){
+	var t = $("#treeDemo");
+	t = $.fn.zTree.init(t, setting, zNodes);
+	demoIframe = $("#testIframe");
+	//demoIframe.on("load", loadReady);
+	var zTree = $.fn.zTree.getZTreeObj("tree");
+    $("#remove").bind("click", remove);
+	//zTree.selectNode(zTree.getNodeByParam("id",'11'));
+});
+</script>
+</body>
+</html>

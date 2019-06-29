@@ -1,0 +1,167 @@
+{include file='public/_meta'}
+<title>新增项目</title>
+</head>
+<body>
+<article class="page-container">
+	<form class="form form-horizontal" id="form-admin-add" method="post" action="{:url('admin/ctbp/addxmdo')}">
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>项目分类：</label>
+			<div class="formControls col-xs-8 col-sm-9"> <span class="select-box" style="width:150px;">
+			<select class="select" name="flid" size="1" id="pid">
+			</select>
+			</span> </div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>项目名称：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text" value="" placeholder="" id="xmmc" name="xmmc" onKeyUp="query()">
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>项目编码：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<!--<input type="text" class="input-text" value="" placeholder="" id="xmbm" name="xmbm" >-->
+				<select id="xmbm" name="xmbm"></select>
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>项目售价：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text" value="" placeholder="" id="sj" name="sj">
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3"><span class="c-red">*</span>单位：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<div style="position:relative;">
+				<span style="margin-left:100px;width:18px;overflow:hidden;">
+				<select style="width:118px;margin-left:-100px" onchange="this.parentNode.nextSibling.value=this.value">
+					{foreach $dwlist as $v}
+					<option value="{$v.title}">{$v.title}</option>
+					{/foreach}
+				</select></span><input name="dw" id="dw" style="width:100px;position:absolute;left:0px;">
+				</div>
+			</div>
+		</div>
+
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<input class="btn btn-primary radius" type="submit" value="&nbsp;&nbsp;提交&nbsp;&nbsp;">
+			</div>
+		</div>
+	</form>
+</article>
+
+<!--_footer 作为公共模版分离出去--> 
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/messages_zh.js"></script> 
+<script type="text/javascript">
+$(function(){
+	$('.skin-minimal input').iCheck({
+		checkboxClass: 'icheckbox-blue',
+		radioClass: 'iradio-blue',
+		increaseArea: '20%'
+	});
+
+	var phtml = '';
+	var pids = {$plist};
+    $('#pid').html(getAuths(pids,0,0));
+	
+	$("#form-admin-add").validate({
+		rules:{
+            flid:{
+                required:true,
+            },
+            xmmc:{
+				required:true,
+				minlength:1,
+				maxlength:16
+			},
+            xmbm:{
+				required:true,
+			},
+            sj:{
+                required:true,
+                number:true
+            },
+			dw:{
+				required:true,
+			}
+		},
+		//onkeyup:false,
+		//focusCleanup:true,
+		//success:"valid",
+		submitHandler:function(form){
+            /**
+            * 成功之后的回调函数
+            * @type {{success: options.success}}
+            */
+            var options = {
+                success: function (data) {
+                    var dataobj =  JSON.parse(data);
+                    if(parseInt(dataobj.statusCode)==200){
+                        layer.msg(dataobj.message,{icon:1,time:1000});
+                        setInterval("closeWindow()",1000);
+                        return true;
+                    }else{
+                        layer.msg(dataobj.message,{icon:5,time:1000});
+                        return false;
+                    }
+                }
+            };
+            $(form).ajaxSubmit(options);
+		}
+	});
+});
+function closeWindow(){
+    var index = parent.layer.getFrameIndex(window.name);
+    window.parent.location.reload();
+}
+
+// 递归显示分类
+function getAuths(arr,id,level){
+    var html_tmp = '';
+    $.each(arr,function(index,value){
+        if(value.pid == id){
+            html_tmp += "<option value='"+value.id+"'>";
+            if(level!=0){
+                html_tmp += "|";
+			}
+            for(var i=0;i<level;i++){
+                html_tmp += "- ";
+			}
+            html_tmp += ""+value.title+"</option>";
+            html_tmp += getAuths(value.son,value.id,level+1);
+        }
+	});
+    return html_tmp;
+}
+
+//根据文本框输入的汉字自动获取汉字拼音首字母到下拉列表中，支持多音字，需引入库pinying.js
+function query(){
+    var str = document.getElementById("xmmc").value.trim();
+    if(str == "") return;
+    var arrRslt = makePy(str);
+    //循环将值到下拉框
+    var option = null;
+    document.getElementById("xmbm").innerHTML="";//清空下拉框
+    var first = document.getElementById("xmbm");
+    for(var j=0;j<arrRslt.length;j++){
+        var obj = document.getElementById("xmbm");
+        obj.add(new Option(arrRslt[j],arrRslt[j]));
+    }
+}
+</script> 
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

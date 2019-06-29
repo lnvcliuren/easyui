@@ -1,0 +1,142 @@
+{include file='public/_meta'}
+<title>项目信息</title>
+</head>
+<body>
+<div class="page-container">
+	<div class="text-c">
+		<form class="Huiform" method="post" action="{:url('admin/ctbp/xmlist')}" target="_self">
+			<input type="hidden" name="flid" id="flid" value="{$cid}" />
+			<!--<input type="text" class="input-text" style="width:250px" placeholder="项目关键字" id="keywords" name="keywords">
+			<button type="submit" class="btn btn-success" id="" name=""><i class="Hui-iconfont">&#xe665;</i> 搜项目信息</button>-->
+		</form>
+	</div>
+  <div class="cl pd-5 bg-1 bk-gray mt-20" style="margin-bottom: 10px;"> 
+      <span class="l">
+          <a href="javascript:;" onclick="datadel()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> 
+          <a href="javascript:;" onclick="admin_xmxx_add('添加项目','{:url(\'admin/ctbp/addxm\',['cid'=>$cid])}')" class="btn btn-primary radius"><i class="Hui-iconfont">&#xe600;</i> 添加项目</a>
+      </span> <span class="r">共有数据：<strong>{$totalcounts}</strong> 条， 总价：<strong>{$totalprice}</strong> 元 </span> </div>
+	<table class="table table-border table-bordered table-bg table-sort">
+		<thead>
+			<tr>
+				<th scope="col" colspan="10">项目</th>
+			</tr>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" name="" value=""></th>
+				<th width="40">ID</th>
+				<th>项目名称</th>
+				<th width="80">项目编码</th>
+				<th width="80">项目售价</th>
+				<th width="80">单位</th>
+                <th width="80">项目分类</th>
+				<th width="80">项目数量</th>
+				<th width="80">项目金额</th>
+				<th width="80">操作</th>
+			</tr>
+		</thead>
+		<tbody>
+        {foreach $list as $k=>$v}
+			<tr class="text-c">
+				<td><input type="checkbox" value="{$v.id}" name=""></td>
+                <td>{$v.id}</td>
+				<td>{$v.xmmc}</td>
+				<td>{$v.xmbm}</td>
+				<td>{$v.sj}</td>
+				<td>{$v.dw}</td>
+                <td>{$v.title}</td>
+				<td>{$v.nums}</td>
+				<td>{$v.totalje}</td>
+				<td>
+					<a title="编辑项目" href="javascript:;" onclick="admin_xmxx_edit('编辑项目','<?php echo url('admin/ctbp/editxm',['id'=>$v['id'],'cid'=>$cid]);?>','370','460')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6df;</i></a>
+					<a title="删除" href="javascript:;" onclick="admin_xmxx_del(this,'{$v.id}','{$cid}')" class="ml-5" style="text-decoration:none"><i class="Hui-iconfont">&#xe6e2;</i></a>
+				</td>
+            </tr>
+        {/foreach}
+		</tbody>
+	</table>
+</div>
+<!--_footer 作为公共模版分离出去-->
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="__PUBLIC__lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.treetable.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('.table-sort').dataTable({
+		"aaSorting": [[ 1, "asc" ]],//默认第几个排序
+		//"bStateSave": true,//状态保存
+		"aoColumnDefs": [
+		//{"bVisible": false, "aTargets": [ 3 ]} //控制列的隐藏显示
+		{"orderable":false,"aTargets":[0,6,7]}// 制定列不参与排序
+		]
+	});
+});
+/*
+	参数解释：
+	title	标题
+	url		请求的url
+	id		需要操作的数据id
+	w		弹出层宽度（缺省调默认值）
+	h		弹出层高度（缺省调默认值）
+*/
+/*管理员-项目-添加*/
+function admin_xmxx_add(title,url,w,h){
+    var flid = $('#flid').val();
+    if(flid){
+        layer_show(title,url,w,h);
+	}else{
+        layer.alert('请选择一个成套殡品后再执行新增操作！');
+	}
+
+}
+/*管理员-项目-编辑*/
+function admin_xmxx_edit(title,url,w,h){
+	layer_show(title,url,w,h);
+}
+
+/*管理员-项目-删除*/
+function admin_xmxx_del(obj,id,cid){
+	layer.confirm('确认要删除吗？',function(index){
+		$.getJSON("{:url('admin/ctbp/deletexm')}",{'ids':id,'cid':cid},function(res){
+				if(parseInt(res.statusCode)==200){
+					$(obj).parents("tr").remove();
+					layer.msg(res.message,{icon:1,time:1000});
+					window.location.reload();
+				}else{
+					layer.msg(res.message);			
+				}
+		});		
+	});
+}
+
+function datadel(){
+	var gid = '';
+    var flid = $('#flid').val();
+        layer.confirm('确定要执行该批量操作吗？',function(){
+
+			$("input:checkbox").each(function(index){
+				if($(this).is(':checked')==true){				
+					var id = $(this).val();
+					if(id){
+						gid += id+','
+					}
+				}
+			});
+			gid = gid.substring(0,gid.length-1);
+			if(gid==''){
+				layer.msg("请选择要操作的项");
+			}else{
+				// 由于需要JSON数据，所以使用$.getJSON
+				$.getJSON("{:url('admin/ctbp/deletexm')}", { 'ids': gid,'cid':flid }, function(res){
+					layer.msg(res.message,{icon:1,time:1000});
+					window.location.reload();
+				});
+			}
+	});
+	
+}
+</script>
+</body>
+</html>

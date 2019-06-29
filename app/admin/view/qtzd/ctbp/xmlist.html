@@ -1,0 +1,99 @@
+{include file='public/_meta'}
+<title>项目信息</title>
+</head>
+<body>
+<div class="page-container">
+
+  <div class="cl pd-5 bg-1 bk-gray mt-20" style="margin-bottom: 10px;"> 
+      <span class="l">
+          <a href="javascript:;" onclick="datadel()" class="	btn btn-warning radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量添加</a>
+      </span> <span class="r">共有数据：<strong>{$totalcounts}</strong> 条</span> </div>
+	<table class="table table-border table-bordered table-bg table-sort">
+		<thead>
+			<tr>
+				<th scope="col" colspan="7">项目</th>
+			</tr>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" name="" value=""></th>
+				<th width="40">ID</th>
+				<th>项目名称</th>
+				<th width="80">项目编码</th>
+				<th width="80">项目售价</th>
+				<th width="80">单位</th>
+                <th width="80">项目分类</th>
+			</tr>
+		</thead>
+		<tbody>
+        {foreach $list as $k=>$v}
+			<tr class="text-c">
+				<td><input type="checkbox" value="{$v.id}" name=""></td>
+                <td>{$v.id}</td>
+				<td>{$v.xmmc}</td>
+				<td>{$v.xmbm}</td>
+				<td>{$v.sj}</td>
+				<td>{$v.dw}</td>
+                <td>{$v.title}</td>
+            </tr>
+        {/foreach}
+		</tbody>
+	</table>
+</div>
+<!--_footer 作为公共模版分离出去-->
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/datatables/1.10.0/jquery.dataTables.min.js"></script> 
+<script type="text/javascript" src="__PUBLIC__lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.treetable.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('.table-sort').dataTable({
+		"aaSorting": [[ 1, "asc" ]],//默认第几个排序
+		//"bStateSave": true,//状态保存
+		"aoColumnDefs": [
+		//{"bVisible": false, "aTargets": [ 3 ]} //控制列的隐藏显示
+		{"orderable":false,"aTargets":[0,5,6]}// 制定列不参与排序
+		]
+	});
+});
+
+function datadel(){
+	var gid = '';
+	layer.confirm('确定要执行该批量操作吗？',function(){
+			$("input:checkbox").each(function(index){
+				if($(this).is(':checked')==true){				
+					var id = $(this).val();
+					if(id){
+						gid += id+','
+					}
+				}
+			});
+			gid = gid.substring(0,gid.length-1);
+			if(gid==''){
+				layer.msg("请选择要操作的项");
+			}else{
+				// 由于需要JSON数据，所以使用$.getJSON
+				$.getJSON("{:url('admin/ctbp/addxmdo')}", { 'ids': gid,'cid':'{$cid}' }, function(res){
+					if(parseInt(res.statusCode)==200){
+						//console.log(res);
+						//layer.alert(res);
+						layer.msg(res.message,{icon:1,time:2000});
+						//window.location.reload();
+						var index = parent.layer.getFrameIndex(window.name);
+    					window.parent.location.reload();
+					}else{
+						layer.msg(res.message,{icon:2,time:2000});
+					}
+					//console.log(res);
+				});
+				/* $.post("{:url('admin/ctbp/addxmdo')}", { 'ids': gid,'cid':'{$cid}' }, function(res){
+					console.log(res);
+				}); */
+			}
+	});
+	
+}
+</script>
+</body>
+</html>

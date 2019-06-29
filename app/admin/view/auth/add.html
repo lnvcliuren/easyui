@@ -1,0 +1,168 @@
+{include file='public/_meta'}
+
+<title>新建规则</title>
+<meta name="keywords" content="">
+<meta name="description" content="">
+</head>
+<body>
+<article class="page-container">
+	<form action="adddo.html" method="post" class="form form-horizontal" id="form-admin-auth-add">
+        <div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">所属菜单：</label>
+            <div class="formControls col-xs-8 col-sm-9">
+                <span class="select-box">
+                <select class="select" id="menu_id" name="menu_id" onchange="return getMenuItems(this);">
+                    {foreach $menus as $k=>$v}
+                    <option value="{$v.id}">&nbsp;&nbsp;{$v.title}</option>
+                    {/foreach}
+                </select>
+                </span>
+            </div>
+            <div class="col-3">
+            </div>      
+        </div>
+        <div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">一级规则：</label>
+            <div class="formControls col-xs-8 col-sm-9">
+                <span class="select-box">
+                <select class="select" id="pid" name="pid">
+                    <option value="0">一级规则</option>
+                    {foreach $plist as $k=>$v}
+                    <option value="{$v.id}">&nbsp;&nbsp;{$v.title}</option>
+                    {if $v.children}
+                    {foreach $v.children as $k2=>$v2}
+                    <option value="{$v2.id}">&nbsp;&nbsp;|-- {$v2.title}</option>
+                    {/foreach}
+                    {/if}
+                    {/foreach}
+                </select>
+                </span>
+            </div>
+            <div class="col-3">
+            </div>      
+        </div>
+        
+        <div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">
+                <span class="c-red">*</span>
+                规则名称：</label>
+            <div class="formControls col-xs-8 col-sm-9">
+                <input type="text" class="input-text" value="" placeholder="" id="title" name="title">
+            </div>
+            <div class="col-3">
+            </div>
+        </div>
+		<div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">
+                规则：</label>
+            <div class="formControls col-xs-8 col-sm-9">
+                <input type="text" class="input-text" value="" placeholder="" id="auth" name="auth">
+            </div>
+            <div class="col-3">
+            </div>
+        </div>
+        <div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">是否菜单：</label>
+            <div class="formControls col-xs-8 col-sm-9 skin-minimal">
+                <div class="check-box">
+                    <input type="checkbox" name="is_menu" id="is_menu" value="1">
+                    <label for="is_menu">是</label>
+                </div>
+            </div>
+            <div class="col-3">
+            </div>
+        </div>
+        <div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">
+                图标Code：</label>
+            <div class="formControls col-xs-8 col-sm-9">
+                <input type="text" class="input-text" value="" placeholder="" id="icon_code" name="icon_code">
+            </div>
+            <div class="col-3">
+            </div>
+        </div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<button type="submit" class="btn btn-success radius" id="admin-role-save" name="admin-role-save"><i class="icon-ok"></i> 确定</button>
+			</div>
+		</div>
+	</form>
+</article>
+
+<!--_footer 作为公共模版分离出去-->
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/jquery.validate.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/validate-methods.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+$(function(){
+    getMenuItems(menu_id);
+	$('.skin-minimal input').iCheck({
+		checkboxClass: 'icheckbox-blue',
+		radioClass: 'iradio-blue',
+		increaseArea: '20%'
+	});
+
+
+	
+	$("#form-admin-auth-add").validate({
+		rules:{
+			title:{
+				required:true,
+			},
+		},
+		//onkeyup:false,
+		//focusCleanup:true,
+		//success:"valid",
+		submitHandler:function(form){
+            /**
+            * 成功之后的回调函数
+            * @type {{success: options.success}}
+            */
+            var options = {
+                success: function (data) {
+                    var dataobj =  JSON.parse(data);
+                    if(parseInt(dataobj.statusCode)==200){
+                        layer.msg(dataobj.message,{icon:1,time:1000});
+                        setInterval("closeWindow()",1000);
+
+                        return true;
+                    }else{
+                        layer.msg(dataobj.message,{icon:5,time:1000});
+                        layer.close(index);
+                        return false;
+                    }
+                }
+            };
+            $(form).ajaxSubmit(options);
+		}
+	});
+});
+function closeWindow(){
+    var index = parent.layer.getFrameIndex(window.name);
+    window.parent.location.reload();
+}
+// 获取菜单下的所有规则
+function getMenuItems(obj){
+    var mid = $(obj).val();
+    $.post("{:url('admin/auth/add')}",{'mid':mid},function(data){
+        var jsonObj = JSON.parse(data);
+        var html = '';
+        html += "<option value=\"0\">一级规则</option>";
+        $.each(jsonObj,function(index,value){
+            //console.log(value);
+            html += "<option value='"+value['id']+"'>|-&nbsp;"+value['title']+"</option>";
+            $.each(value['children'],function(cindex,cvalue){
+                html += "<option value='"+cvalue['id']+"'>&nbsp;&nbsp;|--&nbsp;"+cvalue['title']+"</option>";
+            });
+        });
+        $("#pid").html(html);
+    });
+}
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

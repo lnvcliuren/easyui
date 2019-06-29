@@ -1,0 +1,36 @@
+	<aside class="Hui-aside">
+		
+		{foreach $menus as $k=>$v}
+		<div class="menu_dropdown bk_2" style="display:none">
+			{foreach $v as $mv}
+			<dl id="menu-aaaaa">
+				{if $mv.auth}
+				<dt><i class="Hui-iconfont">{$mv.icon_code}</i>
+					<a data-href="{:url($mv.auth)}" data-title="{$mv.title}" href="javascript:void(0)">
+						{$mv.title}
+					</a>
+					<i class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i>
+				</dt>
+				{else}
+				<dt><i class="Hui-iconfont">{$mv.icon_code}</i> {$mv.title}<i class="Hui-iconfont menu_dropdown-arrow">&#xe6d5;</i></dt>
+				{/if}
+				{if $mv.children}
+				<dd>
+					<ul style="padding-left: 5px;">
+						{foreach $mv.children as $cv}
+						<li>
+							<a data-href="{:url($cv.auth)}" data-title="{$cv.title}" href="javascript:void(0)">
+								<i class="Hui-iconfont menu_dropdown-arrow">&#xe6bf;</i>&nbsp;{$cv.title}
+							</a>
+						</li>
+						{/foreach}
+					</ul>
+				</dd>
+				{/if}
+			</dl>
+			{/foreach}
+		</div>
+		{/foreach}
+		
+	
+	</aside>

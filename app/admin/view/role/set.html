@@ -1,0 +1,168 @@
+<!--_meta 作为公共模版分离出去-->
+{include file='public/_meta'}
+<!--/meta 作为公共模版分离出去-->
+
+<title>角色权限设置</title>
+</head>
+<style type="text/css">
+    .my_Width{
+        width: 130px;
+    }
+</style>
+<body>
+<article class="page-container">
+	<form action="{:url('admin/role/setdo')}" method="post" class="form form-horizontal" id="form-admin-role-set">
+        <input type="hidden" id="id" name="id" value="{$id}" />
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3 my_Width"><span class="c-red">*</span>角色名称：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" readonly class="input-text" style="width:50%;" value="{$role}" placeholder="" id="name" name="name">
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-3 my_Width">用户角色：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				
+				{if $list}
+				{foreach $list as $k=>$v}
+				<dl class="permission-list">
+					<dt>
+						<label>
+							<input type="checkbox" value="{$v.id}" name="set[]" id="set-{$v.id}">
+							{$v.title}</label>
+					</dt>
+
+					{if $v.children}
+					<dd>
+
+						{foreach $v.children as $ck=>$cv}
+						<dl class="cl permission-list2">
+							<dt>
+								<label class="">
+									<input type="checkbox" value="{$cv.id}" name="set[]" id="set-{$v.id}-0" 
+										{if $authids}
+                                        {foreach $authids as $ak=>$av}
+                                            {if $av==$cv.id}
+                                            checked
+                                            {/if}
+                                        {/foreach}
+                                        {/if}
+									>
+									{$cv.title}</label>
+							</dt>
+
+							{if $cv.children}
+							<dd>
+								{foreach $cv.children as $ck2=>$cv2}
+								<label class="">
+									<input type="checkbox" value="{$cv2.id}" name="set[]" id="set-{$v.id}-0-0"
+
+										{if $authids}
+                                        {foreach $authids as $ak=>$av}
+                                            {if $av==$cv2.id}
+                                            checked
+                                            {/if}
+                                        {/foreach}
+                                        {/if}
+
+									>
+									{$cv2.title}</label>
+								{/foreach}
+							</dd>
+							{/if}
+
+						</dl>
+						{/foreach}
+
+					</dd>
+					{/if}
+
+				</dl>
+				{/foreach}
+				{/if}
+				
+
+			</div>
+		</div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<button type="submit" class="btn btn-success radius" id="admin-role-save" name="admin-role-save"><i class="icon-ok"></i> 确定</button>
+			</div>
+		</div>
+	</form>
+</article>
+
+<!--_footer 作为公共模版分离出去-->
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/jquery.validate.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/validate-methods.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+$(function(){
+	$(".permission-list dt input:checkbox").click(function(){
+		$(this).closest("dl").find("dd input:checkbox").prop("checked",$(this).prop("checked"));
+	});
+	$(".permission-list2 dd input:checkbox").click(function(){
+		var l =$(this).parent().parent().find("input:checked").length;
+		var l2=$(this).parents(".permission-list").find(".permission-list2 dd").find("input:checked").length;
+		if($(this).prop("checked")){
+			$(this).closest("dl").find("dt input:checkbox").prop("checked",true);
+			$(this).parents(".permission-list").find("dt").first().find("input:checkbox").prop("checked",true);
+		}
+		else{
+			if(l==0){
+				$(this).closest("dl").find("dt input:checkbox").prop("checked",false);
+			}
+			if(l2==0){
+				$(this).parents(".permission-list").find("dt").first().find("input:checkbox").prop("checked",false);
+			}
+		}
+	});
+	
+	$("#form-admin-role-set").validate({
+		rules:{
+			name:{
+				required:true,
+			},
+		},
+		//onkeyup:false,
+		//focusCleanup:true,
+		//success:"valid",
+		submitHandler:function(form){
+            /**
+            * 成功之后的回调函数
+            * @type {{success: options.success}}
+            */
+            var options = {
+                success: function (data) {
+
+                    var dataobj =  JSON.parse(data);
+                    if(parseInt(dataobj.statusCode)==200){
+                        layer.close(index);
+                        layer.msg(dataobj.message,{icon:1,time:1000});
+                        setInterval("closeWindow()",1000);
+                        return true;
+                    }else{
+                        layer.close(index);
+                        layer.msg(dataobj.message,{icon:5,time:1000});
+                        return false;
+                    }
+                }
+            };
+            //加载层
+            var index = layer.load(0, {shade: false}); //0代表加载的风格，支持0-2
+            $(form).ajaxSubmit(options);
+		}
+	});
+});
+function closeWindow(){
+    var index = parent.layer.getFrameIndex(window.name);
+    window.parent.location.reload();
+}
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>

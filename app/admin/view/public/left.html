@@ -1,0 +1,30 @@
+<div id="leftside">
+        <div id="sidebar_s">
+            <div class="collapse">
+                <div class="toggleCollapse"><div></div></div>
+            </div>
+        </div>
+        <div id="sidebar">
+            <div class="toggleCollapse"><h2>工作导引</h2><div>收缩</div></div>
+
+            <div class="accordion">
+
+                {foreach $menus as $k=>$menu}
+                <div class="accordionHeader">
+                    <h2><span>Folder</span>{$menu.title}</h2>
+                </div>
+                {if $menu.children}
+                <div class="accordionContent">
+                    <ul class="tree treeFolder">
+                        {foreach $menu.children as $children}
+                        <li><a href="{$children.auth}" target="navTab" rel="{$children.module}">{$children.title}</a></li>
+                        {/foreach}
+                    </ul>
+                </div>
+                {/if}
+                {/foreach}
+                
+
+            </div>
+        </div>
+    </div>

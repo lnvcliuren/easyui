@@ -1,0 +1,83 @@
+{include file='public/_meta'}
+
+<title>新建减免类型</title>
+<meta name="keywords" content="">
+<meta name="description" content="">
+</head>
+<body>
+<article class="page-container">
+	<form action="adddo.html" method="post" class="form form-horizontal" id="form-admin-tkxm-add">
+        
+        <div class="row cl">
+            <label class="form-label col-xs-4 col-sm-3">
+                <span class="c-red">*</span>
+                减免类型：</label>
+            <div class="formControls col-xs-8 col-sm-9">
+                <input type="text" class="input-text" value="" placeholder="" id="title" name="title">
+            </div>
+            <div class="col-3">
+            </div>
+        </div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<button type="submit" class="btn btn-success radius" id="admin-role-save" name="admin-role-save"><i class="icon-ok"></i> 确定</button>
+			</div>
+		</div>
+	</form>
+</article>
+
+<!--_footer 作为公共模版分离出去-->
+{include file='public/_footer'}
+<!--/_footer 作为公共模版分离出去-->
+
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/jquery.validate.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/validate-methods.js"></script>
+<script type="text/javascript" src="__PUBLIC__lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('.skin-minimal input').iCheck({
+		checkboxClass: 'icheckbox-blue',
+		radioClass: 'iradio-blue',
+		increaseArea: '20%'
+	});
+	
+	$("#form-admin-tkxm-add").validate({
+		rules:{
+			title:{
+				required:true,
+			},
+		},
+		//onkeyup:false,
+		//focusCleanup:true,
+		//success:"valid",
+		submitHandler:function(form){
+            /**
+            * 成功之后的回调函数
+            * @type {{success: options.success}}
+            */
+            var options = {
+                success: function (data) {
+                    var dataobj =  JSON.parse(data);
+                    if(parseInt(dataobj.statusCode)==200){
+                        layer.msg(dataobj.message,{icon:1,time:1000});
+                        setInterval("closeWindow()",1000);
+                        return true;
+                    }else{
+                        layer.msg(dataobj.message,{icon:5,time:1000});
+                        return false;
+                    }
+                }
+            };
+            $(form).ajaxSubmit(options);
+		}
+	});
+});
+function closeWindow(){
+    var index = parent.layer.getFrameIndex(window.name);
+    window.parent.location.reload();
+}
+</script>
+<!--/请在上方写此页面业务相关的脚本-->
+</body>
+</html>
